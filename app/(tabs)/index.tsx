@@ -1,98 +1,153 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+  import { StyleSheet, Pressable, TextInput, View } from 'react-native';
+  import { useState } from 'react';
+  import { Link } from 'expo-router';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+  import { ThemedText } from '@/components/themed-text';
+  import { ThemedView } from '@/components/themed-view';
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+  export default function HomeScreen() {
+    // ---------- ESTADOS ----------
+    const [contador, setContador] = useState(0);
+    const [nome, setNome] = useState('');
+    const [lista, setLista] = useState(['Estudar React-Native', 'Estudar JavaScript']);
+      const [valor, setValor] = useState('');
+      const [desconto, setDesconto] = useState(10);
+      const [descontoTela, setDescontoTela] = useState(0);
+      const [resultado, setResultado] = useState(0);
+    // ---------- FUNÇÕES (a lógica fica toda aqui, separada do JSX) ----------
+    function adicionarNaLista() {
+      if (nome !== '') {
+        setLista([...lista, nome]);
+        setNome('');
+      } else {
+        alert('Digite algo antes de adicionar!');
+      }
+    }
+
+    function removerDaLista(index: number) {
+      setLista(lista.filter((item, i) => i !== index));
+    }
+
+    function realizarDesconto() {
+      if (valor === '') {
+        alert('Digite o valor!');
+      } else {
+        const valorNumber = Number(valor);
+        const valorDoDesconto = valorNumber * (desconto/100);
+        const valorComDesconto = valorNumber - valorDoDesconto;
+        setValor('');
+        setDescontoTela(valorDoDesconto);
+        setResultado(valorComDesconto);
+      }
+        
+    }
+    // ---------- TELA (só desenha, não decide nada complicado) ----------
+    return (
+
+      <ThemedView style={styles.container}>
+
+      <Link href="./pomodoro">
+        <ThemedText>Ir para pomodoro</ThemedText>
+      </Link>
+
+        <ThemedText type="title">Contador</ThemedText>
+        <Pressable onPress={() => setContador(contador + 1)}>
+          <ThemedText>Toquei {contador} vezes</ThemedText>
+        </Pressable>
+        <Pressable onPress={() => setContador(0)}>
+          <ThemedText>Zerar contador</ThemedText>
+        </Pressable>
+
+        <ThemedText type="title" style={styles.espacoTopo}>Lista de tarefas</ThemedText>
+        <TextInput
+          value={nome}
+          onChangeText={setNome}
+          placeholder="Digite uma tarefa"
+          placeholderTextColor="#999"
+          style={styles.input}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
+        <Pressable style={styles.botao} onPress={adicionarNaLista}>
+          <ThemedText>Adicionar</ThemedText>
+        </Pressable>
+
+        {lista.length === 0 ? (
+          <ThemedText>Sua lista está vazia!</ThemedText>
+        ) : (
+          lista.map((item, index) => (
+            <View key={index} style={styles.linhaItem}>
+              <ThemedText>• {item}</ThemedText>
+              <Pressable onPress={() => removerDaLista(index)}>
+                <ThemedText>❌</ThemedText>
+              </Pressable>
+            </View>
+          ))
+        )}
+
+        <ThemedView style={styles.containerDesconto}>
+          <ThemedText type='title'>Desconto</ThemedText>
+          <TextInput
+            value={valor}
+            onChangeText={setValor}
+            placeholder='Digite um Valor'
+            placeholderTextColor='#999'
+            style={styles.input}
             />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+          <Pressable style={styles.botao} onPress={realizarDesconto}>
+            <ThemedText>Fazer Desconto</ThemedText>
+          </Pressable>
+          <ThemedText type='subtitle'>
+            Desconto: {descontoTela.toFixed(2)} Valor Total: {resultado.toFixed(2)}
+          </ThemedText>
+        </ThemedView>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+      
+    );
+  }
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 24,
+      paddingTop: 60,
+      gap: 12,
+    },
+    containerTexto: {
+      padding: 24,
+      paddingTop: 60,
+      gap: 12,
+    },
+    containerTitulo: {
+      padding: 24,
+      paddingTop: 60,
+      gap: 12,
+    },
+    containerDesconto: {
+      padding: 24,
+      paddingTop: 60,
+      gap: 12,
+    },
+    espacoTopo: {
+      marginTop: 24,
+    },
+    botao: {
+      borderRadius: 5,
+      backgroundColor: 'blue',
+      padding: 10,
+      alignItems: 'center',
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 5,
+      padding: 10,
+      color: '#333',
+    },
+    linhaItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 8,
+    },
+  });
